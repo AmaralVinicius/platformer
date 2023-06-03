@@ -40,8 +40,9 @@ game_map = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0
 player_image = pygame.image.load('assets/player.png').convert()
 player_image.set_colorkey((255, 255, 255))
 player_rect = player_image.get_rect()
-player_rect.topleft = (50, 50)
+player_rect.topleft = (16, 50)
 player_y_momentum = 0
+player_air_time = 0
 moving_right, moving_left = False, False
 player_collisions = {'top': False, 'bottom': False, 'right': False, 'left': False}
 
@@ -94,7 +95,7 @@ while run:
                 moving_right = True
             if event.key == K_LEFT:
                 moving_left = True
-            if event.key == K_UP and player_collisions['bottom']:
+            if event.key == K_UP and player_air_time < 6:
                 player_y_momentum = -5
         if event.type == KEYUP:
             if event.key == K_RIGHT:
@@ -135,8 +136,14 @@ while run:
     player_rect, player_collisions = move(player_rect, player_movement, tile_rects)
 
     # Corrige queda do player caso colida com teto ou chão
-    if player_collisions['bottom'] or player_collisions['top']:
+    if player_collisions['top']:
         player_y_momentum = 1
+
+    if player_collisions['bottom']:
+        player_y_momentum = 1
+        player_air_time = 0
+    else:
+        player_air_time += 1
 
     # Desenha player
     screen.blit(player_image, player_rect)
@@ -145,5 +152,4 @@ while run:
     window.blit(pygame.transform.scale(screen, WINDOW_SIZE), (0, 0))
     pygame.display.update()
     clock.tick(60)
-
 pygame.quit() # Finalização geral
