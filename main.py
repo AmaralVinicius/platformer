@@ -22,19 +22,19 @@ grass_image = pygame.image.load('assets/grass.png').convert()
 dirt_image = pygame.image.load('assets/dirt.png').convert()
 tile_size = 16
 
-game_map = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '0', '0', '0', '2', '2', '2', '2', '0', '0', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '2', '2', '2', '1', '1', '1', '1', '2', '2', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                           ['2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                           ['1', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '2'],
-                           ['1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '1'],
-                           ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                           ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                           ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                           ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']]
+tiles_data = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+                       ['0', '0', '0', '0', '0', '0', '0', '0', '2', '2', '2', '2', '0', '0', '0', '0', '0', '0', '0'],
+                       ['0', '0', '0', '0', '0', '2', '2', '2', '1', '1', '1', '1', '2', '2', '0', '0', '0', '0', '0'],
+                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+                       ['2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+                       ['1', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '2'],
+                       ['1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '1'],
+                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
+                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
+                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
+                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']]
 
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
@@ -83,6 +83,21 @@ def move(rect, movement, tile_rects):
 
     return rect, collisions
 
+# Desenha os tiles e gera os rects para cada tile
+def generate_tiles(tiles_data, dirt_image, grass_image):
+    tile_rects = []
+
+    for row_index, row in enumerate(tiles_data):
+        for tile_index, tile in enumerate(row):
+            if tile == '1':
+                screen.blit(dirt_image, (tile_index * tile_size, row_index * tile_size))
+            if tile == '2':
+                screen.blit(grass_image, (tile_index * tile_size, row_index * tile_size))
+            if tile != '0':
+                tile_rects.append(pygame.Rect(tile_index * tile_size, row_index * tile_size, tile_size, tile_size))
+
+    return tile_rects
+
 # Loop principal
 while run:
 
@@ -104,18 +119,10 @@ while run:
                 moving_left = False
 
     # Background
-    screen .fill((146, 244, 255))
+    screen.fill((146, 244, 255))
 
-    # Desenho de todos tiles do mapa com base nas posições da matriz game_map
-    tile_rects = []
-    for row_index, row in enumerate(game_map):
-        for tile_index, tile in enumerate(row):
-            if tile == '1':
-                screen.blit(dirt_image, (tile_index * tile_size, row_index * tile_size))
-            if tile == '2':
-                screen.blit(grass_image, (tile_index * tile_size, row_index * tile_size))
-            if tile != '0':
-                tile_rects.append(pygame.Rect(tile_index * tile_size, row_index * tile_size, tile_size, tile_size))
+    # Gera o mapa
+    tile_rects = generate_tiles(tiles_data, dirt_image, grass_image)
 
     # Movimentação do player
     player_movement = [0, 0]
