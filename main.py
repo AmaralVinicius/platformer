@@ -111,7 +111,7 @@ class Player(pygame.sprite.Sprite):
             self.air_time += 1
 
 # Desenha os tiles do mapa e gera os rects para cada tile
-def generate_tiles(tiles_data, dirt_image, grass_image):
+def generate_tiles(tiles_data, dirt_image, grass_image, tile_size):
     tile_rects = []
 
     for row_index, row in enumerate(tiles_data):
@@ -178,7 +178,7 @@ while run:
     screen.fill((146, 244, 255))
 
     # Gera o mapa
-    tile_rects = generate_tiles(tiles_data, dirt_image, grass_image)
+    tile_rects = generate_tiles(tiles_data, dirt_image, grass_image, tile_size)
 
     # Player update e draw
     player_group.update(tile_rects)
