@@ -88,8 +88,8 @@ class Player(pygame.sprite.Sprite):
         self.vertical_momentum += 0.3
 
         # Limite de velocidade de queda
-        if self.vertical_momentum >= 4:
-            self.vertical_momentum = 4
+        if self.vertical_momentum >= 5:
+            self.vertical_momentum = 5
 
         # Aplica o momento vertical ao movimento do player
         self.movement[1] += self.vertical_momentum
@@ -109,6 +109,18 @@ class Player(pygame.sprite.Sprite):
         else:
             # Tempo no ar caso esteja sem colidir com o chão, usado para o pulo e coyote time
             self.air_time += 1
+
+# Transforma os dados de um arquivo numa matriz para a função generate_tiles
+def load_tiles_data(path):
+    file = open(path, 'r')
+    file_data = file.read()
+    file.close()
+    file_data = file_data.split('\n')
+    tiles_data = []
+    for row in file_data:
+        tiles_data.append(list(row))
+
+    return tiles_data
 
 # Desenha os tiles do mapa e gera os rects para cada tile
 def generate_tiles(tiles_data, dirt_image, grass_image, tile_size):
@@ -130,24 +142,12 @@ grass_image = pygame.image.load('assets/grass.png').convert()
 dirt_image = pygame.image.load('assets/dirt.png').convert()
 tile_size = 16
 
-tiles_data = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                       ['0', '0', '0', '0', '0', '0', '0', '0', '2', '2', '2', '2', '0', '0', '0', '0', '0', '0', '0'],
-                       ['0', '0', '0', '0', '0', '2', '2', '2', '1', '1', '1', '1', '2', '2', '0', '0', '0', '0', '0'],
-                       ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                       ['2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-                       ['1', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '2'],
-                       ['1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '1'],
-                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-                       ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']]
+tiles_data = load_tiles_data('tiles_data.txt')
 
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
 player_image.set_colorkey((255, 255, 255))
-player = Player(player_image, (16, 48))
+player = Player(player_image, (96, 32))
 player_group = pygame.sprite.GroupSingle(player)
 
 # Loop principal
