@@ -21,6 +21,30 @@ run = True
 show_fps = False
 fps_font = pygame.font.SysFont("freesans", 30)
 
+# Backgrounds class
+class Background(pygame.sprite.Sprite):
+    def __init__(self, pos, size, color, parallax = 0, static = False):
+        super().__init__()
+        # Variáveis gerais do fundo
+        self.pos = pos
+        self.image = pygame.Surface(size)
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+        self.parallax = parallax
+        self.static = static
+
+    def update(self, scroll):
+
+        # Efeito parallax
+        if not self.static:
+            # Reseta a posição
+            self.rect.topleft = self.pos
+
+            # Aplica parallax
+            self.rect.x -= scroll[0] * self.parallax
+            self.rect.y -= scroll[1] * self.parallax
+
 # Player class
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, pos):
@@ -169,6 +193,16 @@ tile_size = 16
 tiles_data = load_tiles_data('tiles_data.txt')
 tile_rects = []
 
+# Backgrounds
+backgrounds = [[(0, 110), (304, 98), (7, 80, 75), 0, True],
+                             [(140, 60), (70, 400), (9, 91, 85), 0.25, False],
+                             [(280, 90), (50, 400), (9, 91, 85), 0.25, False],
+                             [(100, 90), (100, 400), (14, 222,150), 0.5, False],
+                             [(270, 130), (120, 400), (14, 222,150), 0.5, False]]
+                             # pos, size, color, parallax, static
+
+backgrounds_group = pygame.sprite.Group(Background(i[0], i[1], i[2], i[3], i[4]) for i in backgrounds)
+
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
 player_image.set_colorkey((255, 255, 255))
@@ -208,6 +242,10 @@ while run:
 
     # Background
     screen.fill((146, 244, 255))
+
+    # Backgrounds update e draw
+    backgrounds_group.update(camera_scroll)
+    backgrounds_group.draw(screen)
 
     # Gera o mapa
     tile_rects = generate_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
