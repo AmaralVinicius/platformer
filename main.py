@@ -144,6 +144,13 @@ def generate_tiles(tiles_data, dirt_image, grass_image, tile_size, scroll):
 
     return tile_rects
 
+# Retorna scroll necessário para câmera seguir qualquer rect
+def camera_follow(rect_to_follow, scroll, delay):
+    scroll[0] += int((rect_to_follow.centerx - scroll[0] - screen_width / 2) / delay)
+    scroll[1] += int((rect_to_follow.centery - scroll[1] - screen_height / 2) / delay)
+
+    return scroll
+
 # Game Map
 grass_image = pygame.image.load('assets/grass.png').convert()
 dirt_image = pygame.image.load('assets/dirt.png').convert()
@@ -187,16 +194,15 @@ while run:
     # Background
     screen.fill((146, 244, 255))
 
-    # Calcula o valor de scroll da camera da tela para centralizar o player e divide pelo delay de scroll da camera para sensação de movimento
-    camera_scroll[0] += int((player_group.sprite.physics_rect.centerx - camera_scroll[0] - screen_width / 2) /  camera_delay)
-    camera_scroll[1] += int((player_group.sprite.physics_rect.centery - camera_scroll[1] - screen_height / 2) / camera_delay)
-
     # Gera o mapa
     tile_rects = generate_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
 
     # Player update e draw
     player_group.update(tile_rects, camera_scroll)
     player_group.draw(screen)
+
+    # Scroll para a câmera seguir o player
+    camera_scroll = camera_follow(player_group.sprite.physics_rect, camera_scroll, camera_delay)
 
     # Update da tela de jogo
     window.blit(pygame.transform.scale(screen, WINDOW_SIZE), (0, 0))
