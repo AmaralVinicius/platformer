@@ -17,6 +17,10 @@ pygame.display.set_caption('Platformer')
 # Variáveis gerais
 run = True
 
+# Fps label
+show_fps = False
+fps_font = pygame.font.SysFont("freesans", 30)
+
 # Player class
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, pos):
@@ -144,6 +148,13 @@ def generate_tiles(tiles_data, dirt_image, grass_image, tile_size, scroll):
 
     return tile_rects
 
+# Gerar texto e seu rect correspondente
+def text(font, color, text):
+    text_surface = font.render(text, 10, color)
+    text_rect = text_surface.get_rect()
+
+    return text_surface, text_rect
+
 # Retorna scroll necessário para câmera seguir qualquer rect
 def camera_follow(rect_to_follow, scroll, delay):
     scroll[0] += int((rect_to_follow.centerx - scroll[0] - screen_width / 2) / delay)
@@ -156,6 +167,7 @@ grass_image = pygame.image.load('assets/grass.png').convert()
 dirt_image = pygame.image.load('assets/dirt.png').convert()
 tile_size = 16
 tiles_data = load_tiles_data('tiles_data.txt')
+tile_rects = []
 
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
@@ -175,6 +187,9 @@ while run:
         if event.type == QUIT:
             run = False
         if event.type == KEYDOWN:
+            # Altera o estado de exibição dos fps
+            if event.key == K_f:
+                show_fps = not show_fps
             # Controle de estados do player
             if event.key == K_RIGHT:
                 player_group.sprite.moving_right = True
@@ -204,8 +219,19 @@ while run:
     # Scroll para a câmera seguir o player
     camera_scroll = camera_follow(player_group.sprite.physics_rect, camera_scroll, camera_delay)
 
-    # Update da tela de jogo
+    # Desenha a superfície do jogo ja redimensionada na tela
     window.blit(pygame.transform.scale(screen, WINDOW_SIZE), (0, 0))
+
+    # Desenha os fps na tela se ativado
+    if show_fps:
+        fps = int(clock.get_fps())
+        fps_label, fps_rect = text(fps_font, (0, 0, 0), str(fps))
+        fps_rect.topright = (WINDOW_SIZE[0] - 15, 10)
+
+        window.blit(fps_label, fps_rect)
+
+    # Update da tela de jogo
     pygame.display.update()
     clock.tick(60)
+
 pygame.quit() # Finalização geral
