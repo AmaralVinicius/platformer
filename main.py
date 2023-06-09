@@ -23,7 +23,7 @@ fps_font = pygame.font.SysFont("freesans", 30)
 
 # Backgrounds class
 class Background(pygame.sprite.Sprite):
-    def __init__(self, pos, size, color, parallax = 0, static = False):
+    def __init__(self, pos, size, color, parallax = 0):
         super().__init__()
         # Variáveis gerais do fundo
         self.pos = pos
@@ -32,18 +32,14 @@ class Background(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
         self.parallax = parallax
-        self.static = static
 
-    def update(self, scroll):
-
+    def update(self, scroll = [0, 0]):
         # Efeito parallax
-        if not self.static:
-            # Reseta a posição
-            self.rect.topleft = self.pos
+        self.rect.topleft = self.pos # Reseta a posição
 
-            # Aplica parallax
-            self.rect.x -= scroll[0] * self.parallax
-            self.rect.y -= scroll[1] * self.parallax
+        # Aplica parallax
+        self.rect.x -= scroll[0] * self.parallax
+        self.rect.y -= scroll[1] * self.parallax
 
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -194,14 +190,15 @@ tiles_data = load_tiles_data('tiles_data.txt')
 tile_rects = []
 
 # Backgrounds
-backgrounds = [[(0, 110), (304, 98), (7, 80, 75), 0, True],
-                             [(140, 60), (70, 400), (9, 91, 85), 0.25, False],
-                             [(280, 90), (50, 400), (9, 91, 85), 0.25, False],
-                             [(100, 90), (100, 400), (14, 222,150), 0.5, False],
-                             [(270, 130), (120, 400), (14, 222,150), 0.5, False]]
+backgrounds = [[(140, 60), (70, 400), (9, 91, 85), 0.25],
+                             [(280, 90), (50, 400), (9, 91, 85), 0.25],
+                             [(100, 90), (100, 400), (14, 222,150), 0.5],
+                             [(270, 130), (120, 400), (14, 222,150), 0.5]]
                              # pos, size, color, parallax, static
 
-backgrounds_group = pygame.sprite.Group(Background(i[0], i[1], i[2], i[3], i[4]) for i in backgrounds)
+backgrounds_group = pygame.sprite.Group()
+backgrounds_group.add(Background((0, 110), (304, 98), (7, 80, 75))) # Fundo estático
+backgrounds_group.add(Background(i[0], i[1], i[2], i[3]) for i in backgrounds)
 
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
