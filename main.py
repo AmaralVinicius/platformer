@@ -4,6 +4,8 @@ from pygame.locals import *
 # Inicialização geral
 pygame.init()
 clock = pygame.time.Clock()
+# Mixer para sons
+pygame.mixer.pre_init(44100, -16, 2, 512)
 
 # Tela de jogo
 screen_width = 304
@@ -16,6 +18,8 @@ pygame.display.set_caption('Platformer')
 
 # Variáveis gerais
 run = True
+soundtrack = pygame.mixer.Sound("assets/soundtrack.wav") # Trilha sonora
+soundtrack.play(-1, fade_ms=3000)
 
 # Fps label
 show_fps = False
@@ -54,6 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.vertical_momentum = 0
         self.air_time = 0
         self.physics_rect.center = (screen_width / 2, screen_height / 2)
+        self.jump_sound = pygame.mixer.Sound("assets/jump.wav")
         # Variáveis de estado do player
         self.moving_right = False
         self.moving_left = False
@@ -107,6 +112,7 @@ class Player(pygame.sprite.Sprite):
 
         # Pulo
         if self.jumping and self.air_time < 5 and not self.jumped:
+            self.jump_sound.play()
             self.jumped = True
             self.vertical_momentum = -6
 
