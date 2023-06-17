@@ -59,6 +59,11 @@ class Player(pygame.sprite.Sprite):
         self.air_time = 0
         self.physics_rect.center = (screen_width / 2, screen_height / 2)
         self.jump_sound = pygame.mixer.Sound("assets/jump.wav")
+        self.walk_left_sound = pygame.mixer.Sound("assets/walk_left.wav")
+        self.walk_right_sound= pygame.mixer.Sound("assets/walk_right.wav")
+        self.walk_left_sound.set_volume(0.7)
+        self.walk_right_sound.set_volume(0.7)
+        self.walk_sound_duration = 0
         # Variáveis de estado do player
         self.moving_right = False
         self.moving_left = False
@@ -134,13 +139,28 @@ class Player(pygame.sprite.Sprite):
             self.vertical_momentum = 1
 
         if self.collisions['bottom']:
-            self.vertical_momentum = 1
+            # Execute som de andar dependendo da direção que o player estiver andando
+            if self.walk_sound_duration == 0:
+                if self.movement[0] < 0 and not self.collisions['left']:
+                    self.walk_left_sound.play()
+                    self.walk_sound_duration += 1
+                elif self.movement[0] > 0 and not self.collisions['right']:
+                    self.walk_right_sound.play()
+                    self.walk_sound_duration += 1
+
             # Reseta tempo no ar e estado do pulo caso colida com o chão
             self.air_time = 0
             self.jumped = False
+            self.vertical_momentum = 1
         else:
             # Tempo no ar caso esteja sem colidir com o chão, usado para o pulo e coyote time
             self.air_time += 1
+
+        # Tempo de duração do som de andar
+        if self.walk_sound_duration > 0:
+            self.walk_sound_duration += 1
+            if self.walk_sound_duration >= 30:
+                self.walk_sound_duration = 0
 
         # Atualiza rect para renderização adicionando o scroll
         self.rect = self.physics_rect.copy()
