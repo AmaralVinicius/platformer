@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import random
 
 # Inicialização geral
 pygame.init()
@@ -141,11 +142,8 @@ class Player(pygame.sprite.Sprite):
         if self.collisions['bottom']:
             # Execute som de andar dependendo da direção que o player estiver andando
             if self.walk_sound_duration == 0:
-                if self.movement[0] < 0 and not self.collisions['left']:
-                    self.walk_left_sound.play()
-                    self.walk_sound_duration += 1
-                elif self.movement[0] > 0 and not self.collisions['right']:
-                    self.walk_right_sound.play()
+                if self.movement[0] != 0 and not self.collisions['left'] and not self.collisions['right']:
+                    random.choice((self.walk_left_sound, self.walk_right_sound)).play()
                     self.walk_sound_duration += 1
 
             # Reseta tempo no ar e estado do pulo caso colida com o chão
