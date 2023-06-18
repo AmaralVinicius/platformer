@@ -60,10 +60,10 @@ class Player(pygame.sprite.Sprite):
         self.air_time = 0
         self.physics_rect.center = (screen_width / 2, screen_height / 2)
         self.jump_sound = pygame.mixer.Sound("assets/jump.wav")
-        self.walk_left_sound = pygame.mixer.Sound("assets/walk_left.wav")
-        self.walk_right_sound= pygame.mixer.Sound("assets/walk_right.wav")
-        self.walk_left_sound.set_volume(0.7)
-        self.walk_right_sound.set_volume(0.7)
+        self.walk_grass_sound = pygame.mixer.Sound("assets/walk_grass.wav")
+        self.walk_grass_sound.set_volume(0.7)
+        self.walk_dirt_sound= pygame.mixer.Sound("assets/walk_dirt.wav")
+        self.walk_dirt_sound.set_volume(0.7)
         self.walk_sound_duration = 0
         # Variáveis de estado do player
         self.moving_right = False
@@ -107,7 +107,7 @@ class Player(pygame.sprite.Sprite):
                 self.physics_rect.top = tile.bottom
                 self.collisions['top'] = True
 
-    def update(self, tile_rects, scroll):
+    def update(self, tiles_data, tile_rects, scroll):
         self.movement = [0, 0]
 
         # Movimento horizontal
@@ -140,10 +140,14 @@ class Player(pygame.sprite.Sprite):
             self.vertical_momentum = 1
 
         if self.collisions['bottom']:
-            # Execute som de andar dependendo da direção que o player estiver andando
-            if self.walk_sound_duration == 0:
-                if self.movement[0] != 0 and not self.collisions['left'] and not self.collisions['right']:
-                    random.choice((self.walk_left_sound, self.walk_right_sound)).play()
+            # Execute som de andar dependendo do tipo de chão que o player estiver andando
+            if self.walk_sound_duration == 0 and self.movement[0] != 0:
+                if not self.collisions['left'] and not self.collisions['right']:
+                    if tiles_data[round(player.physics_rect.y / 16)  + 1][round(player.physics_rect.x / 16)] == '2':
+                        self.walk_grass_sound.play()
+                    elif tiles_data[round(player.physics_rect.y / 16)  + 1][round(player.physics_rect.x / 16)] == '1':
+                        self.walk_dirt_sound.play()
+
                     self.walk_sound_duration += 1
 
             # Reseta tempo no ar e estado do pulo caso colida com o chão
@@ -153,11 +157,12 @@ class Player(pygame.sprite.Sprite):
         else:
             # Tempo no ar caso esteja sem colidir com o chão, usado para o pulo e coyote time
             self.air_time += 1
+            self.walk_sound_duration = 0
 
         # Tempo de duração do som de andar
         if self.walk_sound_duration > 0:
             self.walk_sound_duration += 1
-            if self.walk_sound_duration >= 30:
+            if self.walk_sound_duration >= 25:
                 self.walk_sound_duration = 0
 
         # Atualiza rect para renderização adicionando o scroll
@@ -272,7 +277,7 @@ while run:
     tile_rects = generate_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
 
     # Player update e draw
-    player_group.update(tile_rects, camera_scroll)
+    player_group.update(tiles_data, tile_rects, camera_scroll)
     player_group.draw(screen)
 
     # Scroll para a câmera seguir o player
