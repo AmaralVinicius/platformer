@@ -58,7 +58,6 @@ class Player(pygame.sprite.Sprite):
         self.movement = [0, 0]
         self.vertical_momentum = 0
         self.air_time = 0
-        self.physics_rect.center = (screen_width / 2, screen_height / 2)
         self.jump_sound = pygame.mixer.Sound("assets/jump.wav")
         self.walk_grass_sound = pygame.mixer.Sound("assets/walk_grass.wav")
         self.walk_grass_sound.set_volume(0.7)
@@ -192,8 +191,9 @@ def generate_tiles(tiles_data, dirt_image, grass_image, tile_size, scroll):
                 screen.blit(dirt_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
             if tile == '2':
                 screen.blit(grass_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
-            if tile != '0':
-                tile_rects.append(pygame.Rect(tile_index * tile_size, row_index * tile_size, tile_size, tile_size))
+            if row_index < 20:
+                if tile != '0':
+                    tile_rects.append(pygame.Rect(tile_index * tile_size, row_index * tile_size, tile_size, tile_size))
 
     return tile_rects
 
@@ -206,8 +206,25 @@ def text(font, color, text):
 
 # Retorna scroll necessário para câmera seguir qualquer rect
 def camera_follow(rect_to_follow, scroll, delay):
-    scroll[0] += int((rect_to_follow.centerx - scroll[0] - screen_width / 2) / delay)
     scroll[1] += int((rect_to_follow.centery - scroll[1] - screen_height / 2) / delay)
+
+    # Limites de câmera
+    if rect_to_follow.centerx - screen_width / 2 <= 16:
+            if scroll[0] == 15 or scroll[0] == 17:
+                scroll[0] = 16
+            if scroll[0] > 16:
+                scroll[0] -= 2
+            if scroll[0] < 16:
+                scroll[0] += 2
+    elif rect_to_follow.centerx + screen_width / 2 >= 592:
+            if scroll[0] + screen_width == 591 or scroll[0] + screen_width == 593:
+                scroll[0] = 592 - screen_width
+            if scroll[0] + screen_width > 592:
+                scroll[0] -= 2
+            if scroll[0] + screen_width < 592:
+                scroll[0] += 2
+    else:
+        scroll[0] += int((rect_to_follow.centerx - scroll[0] - screen_width / 2) / delay)
 
     return scroll
 
@@ -232,7 +249,7 @@ backgrounds_group.add(Background(i[0], i[1], i[2], i[3]) for i in backgrounds)
 # Player
 player_image = pygame.image.load('assets/player.png').convert()
 player_image.set_colorkey((255, 255, 255))
-player = Player(player_image, (96, 32))
+player = Player(player_image, (288, 96))
 player_group = pygame.sprite.GroupSingle(player)
 
 # Camera
