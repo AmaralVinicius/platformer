@@ -181,18 +181,23 @@ def load_tiles_data(path):
 
     return tiles_data
 
-# Desenha os tiles do mapa e gera os rects para cada tile
-def generate_tiles(tiles_data, dirt_image, grass_image, tile_size, scroll):
+# Desenha os tiles
+def  draw_tiles(tiles_data, dirt_image, grass_image, tile_size, scroll):
+    for row_index, row in enumerate(tiles_data):
+        for tile_index, tile in enumerate(row):
+            if tile == '1' or tile == '4':
+                screen.blit(dirt_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
+            if tile == '2':
+                screen.blit(grass_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
+
+# Gera os rects para cada tile colisivo
+def generate_tiles_rects(tiles_date, tile_size):
     tile_rects = []
 
     for row_index, row in enumerate(tiles_data):
         for tile_index, tile in enumerate(row):
-            if tile == '1':
-                screen.blit(dirt_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
-            if tile == '2':
-                screen.blit(grass_image, (tile_index * tile_size - scroll[0], row_index * tile_size - scroll[1]))
             if row_index < 20:
-                if tile != '0':
+                if tile not in ['0', '4']:
                     tile_rects.append(pygame.Rect(tile_index * tile_size, row_index * tile_size, tile_size, tile_size))
 
     return tile_rects
@@ -233,7 +238,7 @@ grass_image = pygame.image.load('assets/grass.png').convert()
 dirt_image = pygame.image.load('assets/dirt.png').convert()
 tile_size = 16
 tiles_data = load_tiles_data('tiles_data.txt')
-tile_rects = []
+tile_rects = generate_tiles_rects(tiles_data, tile_size)
 
 # Backgrounds
 backgrounds = [[(140, 60), (70, 400), (9, 91, 85), 0.25],
@@ -290,8 +295,8 @@ while run:
     backgrounds_group.update(camera_scroll)
     backgrounds_group.draw(screen)
 
-    # Gera o mapa
-    tile_rects = generate_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
+    # Desenha o mapa
+    draw_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
 
     # Player update e draw
     player_group.update(tiles_data, tile_rects, camera_scroll)
