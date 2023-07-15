@@ -19,13 +19,43 @@ pygame.display.set_caption('Platformer')
 
 # Variáveis gerais
 run = True
-soundtrack = pygame.mixer.Sound("assets/soundtrack.wav") # Trilha sonora
+soundtrack = pygame.mixer.Sound('assets/soundtrack.wav') # Trilha sonora
 soundtrack.play(-1, fade_ms=3000)
 
 # Fps label
 show_fps = False
-fps_font = pygame.font.SysFont("freesans", 30)
+fps_font = pygame.font.SysFont('freesans', 30)
 
+# Animation class
+class Animation():
+    def __init__(self, path, frames_duration):
+        self.name = path.split('/')[-1]
+        self.sprites = {}
+        self.frames = []
+        self.playing = False
+        self.current_frame = 0
+
+        for index , frame_duration in enumerate(frames_duration):
+            frame_id = self.name + '_' + str(index)
+            image_path = path + '/' + frame_id  + '.png'
+            # assets/player/idle/idle_0.png
+            image = pygame.image.load(image_path).convert()
+            image.set_colorkey((255, 255, 255))
+            self.sprites[frame_id] = image
+            for i in range(frame_duration):
+                self.frames.append(frame_id)
+
+        self.current_sprite = self.sprites[self.frames[0]]
+
+    def update(self):
+        if self.playing:
+            self.current_sprite = self.sprites[self.frames[self.current_frame]]
+            self.current_frame += 1
+            if  self.current_frame >= len(self.frames):
+                self.current_frame = 0
+
+        return self.current_sprite
+ 
 # Backgrounds class
 class Background(pygame.sprite.Sprite):
     def __init__(self, pos, size, color, parallax = 0):
@@ -48,20 +78,24 @@ class Background(pygame.sprite.Sprite):
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image, pos):
+    def __init__(self, pos):
         super().__init__()
+        # Sprites e animações
+        self.idle = Animation('assets/player/idle', [7, 7, 40])
+        self.run = Animation('assets/player/run', [7, 7])
+        self.animations = [self.run, self.idle]
+        self.current_animation = self.idle
         # Variáveis gerais do player
-        self.image = image
-        self.physics_rect = self.image.get_rect()
+        self.physics_rect = self.current_animation.current_sprite.get_rect()
         self.physics_rect.topleft = pos
         self.rect = self.physics_rect.copy()
         self.movement = [0, 0]
         self.vertical_momentum = 0
         self.air_time = 0
-        self.jump_sound = pygame.mixer.Sound("assets/jump.wav")
-        self.walk_grass_sound = pygame.mixer.Sound("assets/walk_grass.wav")
+        self.jump_sound = pygame.mixer.Sound('assets/jump.wav')
+        self.walk_grass_sound = pygame.mixer.Sound('assets/walk_grass.wav')
         self.walk_grass_sound.set_volume(0.7)
-        self.walk_dirt_sound= pygame.mixer.Sound("assets/walk_dirt.wav")
+        self.walk_dirt_sound= pygame.mixer.Sound('assets/walk_dirt.wav')
         self.walk_dirt_sound.set_volume(0.7)
         self.walk_sound_duration = 0
         # Variáveis de estado do player
@@ -69,6 +103,13 @@ class Player(pygame.sprite.Sprite):
         self.moving_left = False
         self.jumping = False
         self.jumped = False
+        self.direction = 'right'
+
+    # Controle de animações
+    def animation_controller(self):
+        for animation in self.animations:
+            if animation.playing:
+                self.current_animation = animation
 
     # Retorna toda colisão do player com a lista de tiles passada
     def collision_test(self, tile_rects):
@@ -107,13 +148,29 @@ class Player(pygame.sprite.Sprite):
                 self.collisions['top'] = True
 
     def update(self, tiles_data, tile_rects, scroll):
+        self.animation_controller()
+        self.image = self.current_animation.update()
+        if self.direction == 'left':
+            self.image = pygame.transform.flip(self.image, True, False)
+        elif self.direction == 'right':
+            self.image = pygame.transform.flip(self.image, False, False)
+
         self.movement = [0, 0]
 
         # Movimento horizontal
-        if self.moving_right:
+        if self.moving_right and not self.moving_left:
+            self.direction = 'right'
             self.movement[0] += 2
-        if self.moving_left:
+        if self.moving_left and not self.moving_right:
+            self.direction = 'left'
             self.movement[0] -= 2
+
+        if self.movement[0] == 0:
+            self.run.playing = False
+            self.idle.playing = True
+        else:
+            self.run.playing = True
+            self.idle.playing = False
 
         # Pulo
         if self.jumping and self.air_time < 5 and not self.jumped:
@@ -157,6 +214,8 @@ class Player(pygame.sprite.Sprite):
             # Tempo no ar caso esteja sem colidir com o chão, usado para o pulo e coyote time
             self.air_time += 1
             self.walk_sound_duration = 0
+            self.run.playing = False
+            self.idle.playing = False
 
         # Tempo de duração do som de andar
         if self.walk_sound_duration > 0:
@@ -252,9 +311,7 @@ backgrounds_group.add(Background((0, 110), (304, 98), (7, 80, 75))) # Fundo est�
 backgrounds_group.add(Background(i[0], i[1], i[2], i[3]) for i in backgrounds)
 
 # Player
-player_image = pygame.image.load('assets/player.png').convert()
-player_image.set_colorkey((255, 255, 255))
-player = Player(player_image, (288, 96))
+player = Player((288, 96))
 player_group = pygame.sprite.GroupSingle(player)
 
 # Camera
