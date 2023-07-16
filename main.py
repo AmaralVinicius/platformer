@@ -28,19 +28,21 @@ fps_font = pygame.font.SysFont('freesans', 30)
 
 # Animation class
 class Animation():
-    def __init__(self, path, frames_duration):
+    def __init__(self, path, frames_duration, delay = 0, color_key = (255, 255, 255)):
         self.name = path.split('/')[-1]
         self.sprites = {}
         self.frames = []
         self.playing = False
         self.current_frame = 0
+        self.delay = delay
+        self.delay_counter = 0
 
         for index , frame_duration in enumerate(frames_duration):
             frame_id = self.name + '_' + str(index)
             image_path = path + '/' + frame_id  + '.png'
             # assets/player/idle/idle_0.png
             image = pygame.image.load(image_path).convert()
-            image.set_colorkey((255, 255, 255))
+            image.set_colorkey(color_key)
             # Sprites (Imagens da animação)
             self.sprites[frame_id] = image
             for i in range(frame_duration):
@@ -52,11 +54,15 @@ class Animation():
     def update(self):
         # Parar ou continuar / iniciar a animação com a variável de estado playing
         if self.playing:
-            self.current_sprite = self.sprites[self.frames[self.current_frame]]
-            self.current_frame += 1
-            # Reinicia a animção quando chegar no final
-            if  self.current_frame >= len(self.frames):
-                self.current_frame = 0
+            # Delay inicial
+            if self.delay_counter >= self.delay:
+                self.current_sprite = self.sprites[self.frames[self.current_frame]]
+                self.current_frame += 1
+                # Reinicia a animção quando chegar no final
+                if  self.current_frame >= len(self.frames):
+                    self.current_frame = 0
+            else:
+                self.delay_counter += 1
 
         # Retorna a o sprite (frame) atual da animação, deve ser usado para atualizar a imagem do que for ser animado
         return self.current_sprite
@@ -83,11 +89,11 @@ class Background(pygame.sprite.Sprite):
 
 # Object class
 class Object(pygame.sprite.Sprite):
-    def __init__(self, pos, path, frames_duration):
+    def __init__(self, pos, path, frames_duration, playing = True, delay = 0, color_key = (255, 255, 255)):
         super().__init__()
         # Variáveis gerais do objeto
-        self.idle = Animation(path, frames_duration)
-        self.idle.playing = True
+        self.idle = Animation(path, frames_duration, delay, color_key)
+        self.idle.playing = playing
         self.image = self.idle.current_sprite
         self.pos = pos
         self.rect = self.image.get_rect()
@@ -341,7 +347,7 @@ backgrounds_group.add(Background(i[0], i[1], i[2], i[3]) for i in backgrounds)
 
 # Tree
 trees_positions = [(64, 64), (112, -48), (240, 48), (336, 128), (32, 256), (64, 256), (144, 256), (176, 256), (224, 256),  (368, 256)]
-tree_group = pygame.sprite.Group(Object(pos, 'assets/tree/idle', [60, 30, 30, 60, 60, 40, 15, 5, 5, 5, 7, 55]) for pos in trees_positions)
+tree_group = pygame.sprite.Group(Object(pos, 'assets/tree/idle', [240, 40, 60, 180, 480, 90, 5, 5, 5, 5, 5, 120], delay = random.randint(120, 360)) for pos in trees_positions)
 
 # Campfire
 campfires_positions = [(240, 80), (96, 96), (368, 32), (544, 0), (176, 288), (464, 288)]
