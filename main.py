@@ -76,6 +76,29 @@ class Background(pygame.sprite.Sprite):
         self.rect.x -= scroll[0] * self.parallax
         self.rect.y -= scroll[1] * self.parallax
 
+# Object class
+class Object(pygame.sprite.Sprite):
+    def __init__(self, pos, path, frames_duration):
+        super().__init__()
+        # Variáveis gerais do objeto
+        self.idle = Animation(path, frames_duration)
+        self.idle.playing = True
+        self.image = self.idle.current_sprite
+        self.pos = pos
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+    def update(self, scroll):
+        # Reseta a posição (para scroll da tela)
+        self.rect.topleft = self.pos
+
+        # Atualiza a animação idle
+        self.image = self.idle.update()
+
+        # Aplica o scroll
+        self.rect.x -= scroll[0]
+        self.rect.y -= scroll[1]
+
 # Player class
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -85,8 +108,9 @@ class Player(pygame.sprite.Sprite):
         self.run = Animation('assets/player/run', [7, 7])
         self.animations = [self.run, self.idle]
         self.current_animation = self.idle
+        self.image = self.current_animation.current_sprite
         # Variáveis gerais do player
-        self.physics_rect = self.current_animation.current_sprite.get_rect()
+        self.physics_rect = self.image.get_rect()
         self.physics_rect.topleft = pos
         self.rect = self.physics_rect.copy()
         self.movement = [0, 0]
@@ -310,6 +334,14 @@ backgrounds_group = pygame.sprite.Group()
 backgrounds_group.add(Background((0, 110), (304, 98), (7, 80, 75))) # Fundo estático
 backgrounds_group.add(Background(i[0], i[1], i[2], i[3]) for i in backgrounds)
 
+# Tree
+trees_positions = [(64, 64), (112, -48), (240, 48), (336, 128), (32, 256), (64, 256), (144, 256), (176, 256), (224, 256),  (368, 256)]
+tree_group = pygame.sprite.Group(Object(pos, 'assets/tree/idle', [60, 30, 30, 60, 60, 40, 15, 5, 5, 5, 7, 55]) for pos in trees_positions)
+
+# Campfire
+campfires_positions = [(240, 80), (96, 96), (368, 32), (544, 0), (176, 288), (464, 288)]
+campfire_group = pygame.sprite.Group([Object(pos, 'assets/campfire/idle', [10, 10, 10, 10]) for pos in campfires_positions])
+
 # Player
 player = Player((288, 96))
 player_group = pygame.sprite.GroupSingle(player)
@@ -354,6 +386,14 @@ while run:
 
     # Desenha o mapa
     draw_tiles(tiles_data, dirt_image, grass_image, tile_size, camera_scroll)
+
+    # Tree update e draw
+    tree_group.update(camera_scroll)
+    tree_group.draw(screen)
+
+    # Campfire update e draw
+    campfire_group.update(camera_scroll)
+    campfire_group.draw(screen)
 
     # Player update e draw
     player_group.update(tiles_data, tile_rects, camera_scroll)
