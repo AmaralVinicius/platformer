@@ -41,19 +41,24 @@ class Animation():
             # assets/player/idle/idle_0.png
             image = pygame.image.load(image_path).convert()
             image.set_colorkey((255, 255, 255))
+            # Sprites (Imagens da animação)
             self.sprites[frame_id] = image
             for i in range(frame_duration):
+                # Frames define a duração de cada sprite, cada frame represente um tick do jogo naquele sprite correspondente nos sprites
                 self.frames.append(frame_id)
 
         self.current_sprite = self.sprites[self.frames[0]]
 
     def update(self):
+        # Parar ou continuar / iniciar a animação com a variável de estado playing
         if self.playing:
             self.current_sprite = self.sprites[self.frames[self.current_frame]]
             self.current_frame += 1
+            # Reinicia a animção quando chegar no final
             if  self.current_frame >= len(self.frames):
                 self.current_frame = 0
 
+        # Retorna a o sprite (frame) atual da animação, deve ser usado para atualizar a imagem do que for ser animado
         return self.current_sprite
  
 # Backgrounds class
