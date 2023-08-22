@@ -134,6 +134,7 @@ class Player(pygame.sprite.Sprite):
         self.walk_dirt_sound.set_volume(0.7)
         self.walk_sound_duration = 0
         # Variáveis de estado do player
+        self.collisions = {'top': False, 'bottom': False, 'right': False, 'left': False}
         self.moving_right = False
         self.moving_left = False
         self.jumping = False
@@ -200,13 +201,6 @@ class Player(pygame.sprite.Sprite):
             self.direction = 'left'
             self.movement[0] -= 2
 
-        if self.movement[0] == 0:
-            self.run.playing = False
-            self.idle.playing = True
-        else:
-            self.run.playing = True
-            self.idle.playing = False
-
         # Pulo
         if self.jumping and self.air_time < 5 and not self.jumped:
             self.jump_sound.play()
@@ -225,6 +219,14 @@ class Player(pygame.sprite.Sprite):
 
         # Aplica o movimento e colisões
         self.move(tile_rects)
+
+        # Animação de corrida
+        if self.movement[0] == 0 or self.collisions['right'] or self.collisions['left']:
+            self.run.playing = False
+            self.idle.playing = True
+        else:
+            self.run.playing = True
+            self.idle.playing = False
 
         # Corrige queda do player caso colida com teto ou chão
         if self.collisions['top']:
