@@ -115,9 +115,10 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         # Sprites e animações
-        self.idle = Animation('assets/player/idle', [7, 7, 40])
         self.run = Animation('assets/player/run', [7, 7])
-        self.animations = [self.run, self.idle]
+        self.idle = Animation('assets/player/idle', [7, 7, 40])
+        self.jump = Animation('assets/player/jump', [1])
+        self.animations = [self.run, self.idle, self.jump]
         self.current_animation = self.idle
         self.image = self.current_animation.current_sprite
         # Variáveis gerais do player
@@ -243,16 +244,16 @@ class Player(pygame.sprite.Sprite):
 
                     self.walk_sound_duration += 1
 
-            # Reseta tempo no ar e estado do pulo caso colida com o chão
+            # Reseta tempo no ar e estado do pulo caso colida com o chão e animação
             self.air_time = 0
             self.jumped = False
             self.vertical_momentum = 1
+            self.jump.playing = False
         else:
             # Tempo no ar caso esteja sem colidir com o chão, usado para o pulo e coyote time
             self.air_time += 1
             self.walk_sound_duration = 0
-            self.run.playing = False
-            self.idle.playing = False
+            self.jump.playing = True
 
         # Tempo de duração do som de andar
         if self.walk_sound_duration > 0:
